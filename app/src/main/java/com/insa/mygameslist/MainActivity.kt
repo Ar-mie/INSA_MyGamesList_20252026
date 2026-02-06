@@ -23,6 +23,7 @@ import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.ImageLoader
@@ -58,8 +59,8 @@ fun AfficheDonneesJeu(game: Game){
                 Text(game.name)
                 Text("Genres :")
                 Row(){
-                    game.genres.forEach { genreId ->
-                        IGDB.genresMap.get(genreId)?.let { Text("${it}") } }
+                    Text(game.genres.filter { IGDB.genresMap.containsKey(it) }
+                        .joinToString(", ") { IGDB.genresMap.get(it)!! }, overflow = TextOverflow.Ellipsis, maxLines = 1)
 
                 }
             }
