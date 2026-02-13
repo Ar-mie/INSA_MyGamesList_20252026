@@ -1,5 +1,7 @@
 package com.insa.mygameslist
 
+import Etats_Navigation.Home
+import Etats_Navigation.Game_Info
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,17 +17,21 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import coil3.ImageLoader
 import coil3.compose.AsyncImage
 import coil3.compose.setSingletonImageLoaderFactory
@@ -67,10 +73,8 @@ fun AfficheDonneesJeu(game: Game){
     }
 }
 
-
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -78,6 +82,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
+            val backStack = remember{ mutableListOf<Any>(Home) }
 
             MyGamesListTheme {
                 Scaffold(
@@ -93,7 +98,22 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize()
                 ) { innerPadding ->
                     //Text("À remplir", modifier = Modifier.padding(innerPadding))
-                    AfficherJeux(innerPadding, IGDB)
+                    NavDisplay(
+                        backStack = backStack,
+                        onBack = { backStack.removeLastOrNull() },
+                        entryProvider = { key ->
+                            when(key){
+                                is Home -> NavEntry(key){
+                                    AfficherJeux(innerPadding, IGDB)
+                                }
+                                is Game_Info -> NavEntry(key){
+
+                                }
+                                else -> NavEntry(Unit) { Text("Unknown route") }
+                            }
+                        }
+                    )
+
                 }
             }
         }
