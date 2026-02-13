@@ -47,7 +47,7 @@ import com.insa.mygameslist.ui.theme.MyGamesListTheme
 //@Preview(showBackground = true)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AfficherJeux(igdb: IGDB,backStack: MutableList<Any>){
+fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>){
     Scaffold(topBar = {
         TopAppBar(
             colors = topAppBarColors(
@@ -89,6 +89,55 @@ fun AfficheDonneesJeu(game: Game,backStack: MutableList<Any>){
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
+    Scaffold(topBar = {
+        TopAppBar(
+            colors = topAppBarColors(
+                containerColor = Color.Cyan,
+                titleContentColor = Color.Black,
+            ),
+            title = {
+                IGDB.gamesMap.get(id)?.let { it1 -> Text(it1.name) }
+            },
+            navigationIcon = {
+                IconButton(onClick = {backStack.removeLastOrNull()}){
+                    Icon(
+                        painter = painterResource(R.drawable.baseline_arrow_back_24),
+                        contentDescription = ""
+                    )
+                }
+            }
+        )
+    },
+        contentWindowInsets = WindowInsets.systemBars,
+        modifier = Modifier.fillMaxSize()) { innerPadding ->
+            Column(modifier = Modifier.padding(innerPadding)){
+                IGDB.gamesMap.get(id)?.let { it1 -> Text(it1.name) }
+                val currentgame: Game? = IGDB.gamesMap.get(id)
+                //TODO
+                //FAIRE UNE SEULE MAP AVEC UN GAME QUI A TOUTES LES INFOS
+                //cf game Complet
+
+                AsyncImage(
+                    model = "https:${IGDB.coversMap.get(currentgame?.cover )}",
+                    contentDescription = null
+                )
+
+                Text("Description : ${currentgame?.summary}")
+
+
+                Row(){
+                }
+            }
+//        Text(
+//            "ID du jeu : ${id}",
+//            modifier = Modifier.padding(innerPadding)
+//        )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -106,35 +155,10 @@ class MainActivity : ComponentActivity() {
                     entryProvider = { key ->
                         when(key){
                             is Home -> NavEntry(key){
-                                AfficherJeux( IGDB,backStack)
+                                AfficherListeJeux( IGDB,backStack)
                             }
                             is Game_Info -> NavEntry(key){
-                                Scaffold(topBar = {
-                                    TopAppBar(
-                                        colors = topAppBarColors(
-                                            containerColor = Color.Cyan,
-                                            titleContentColor = Color.Black,
-                                        ),
-                                        title = {
-                                                IGDB.gamesMap.get(key.id)?.let { it1 -> Text(it1) }
-                                        },
-                                        navigationIcon = {
-                                            IconButton(onClick = {backStack.removeLastOrNull()}){
-                                                Icon(
-                                                    painter = painterResource(R.drawable.baseline_arrow_back_24),
-                                                    contentDescription = ""
-                                                )
-                                            }
-                                        }
-                                        )
-                                },
-                                    contentWindowInsets = WindowInsets.systemBars,
-                                    modifier = Modifier.fillMaxSize()) { innerPadding ->
-                                        Text(
-                                            "ID du jeu : ${key.id}",
-                                            modifier = Modifier.padding(innerPadding)
-                                        )
-                                }
+                                AfficherDetailsJeu(IGDB,backStack,key.id)
                             }
                             else -> NavEntry(Unit) { Text("Unknown route") }
                         }
