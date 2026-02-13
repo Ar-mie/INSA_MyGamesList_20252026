@@ -1,49 +1,48 @@
 package com.insa.mygameslist
 
-import Etats_Navigation.Home
 import Etats_Navigation.Game_Info
+import Etats_Navigation.Home
 import android.os.Bundle
+import android.view.View
+import android.widget.Toolbar
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
-import coil3.ImageLoader
 import coil3.compose.AsyncImage
-import coil3.compose.setSingletonImageLoaderFactory
-import coil3.request.crossfade
+import coil3.request.colorSpace
 import com.insa.mygameslist.data.Game
 import com.insa.mygameslist.data.IGDB
 import com.insa.mygameslist.ui.theme.MyGamesListTheme
-import kotlinx.datetime.format.Padding
+
 
 //@Preview(showBackground = true)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -117,11 +116,17 @@ class MainActivity : ComponentActivity() {
                                             titleContentColor = Color.Black,
                                         ),
                                         title = {
-                                            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                                                Button(onClick = {backStack.add(Home)}, modifier = Modifier.padding()) {Text("<-")}
                                                 IGDB.gamesMap.get(key.id)?.let { it1 -> Text(it1) }
+                                        },
+                                        navigationIcon = {
+                                            IconButton(onClick = {backStack.removeLastOrNull()}){
+                                                Icon(
+                                                    painter = painterResource(R.drawable.baseline_arrow_back_24),
+                                                    contentDescription = ""
+                                                )
                                             }
-                                        })
+                                        }
+                                        )
                                 },
                                     contentWindowInsets = WindowInsets.systemBars,
                                     modifier = Modifier.fillMaxSize()) { innerPadding ->
