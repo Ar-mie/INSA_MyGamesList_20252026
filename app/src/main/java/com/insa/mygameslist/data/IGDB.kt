@@ -10,6 +10,7 @@ object IGDB {
     lateinit var covers: List<Cover>
     lateinit var coversMap: Map<Long,String>
     lateinit var games: List<Game>
+    lateinit var gamesMap: Map<Long,String>
     lateinit var genres: List<Genre>
     lateinit var genresMap: Map<Long,String>
     lateinit var platformLogo: List<PlatformLogo>
@@ -30,6 +31,7 @@ object IGDB {
         )
 
         games = gamesFromJson
+        gamesMap = games.associateBy({it.id}, {it.name} )
 
         val genresFromJson: List<Genre> = Gson().fromJson(
             context.resources.openRawResource(R.raw.genres).bufferedReader(),
