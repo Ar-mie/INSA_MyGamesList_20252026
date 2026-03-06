@@ -101,4 +101,4 @@ data class Game(val id:Long, val cover:Long, @SerializedName("first_release_date
 data class GameComplet(val id:Long, val cover:Cover, val firstRelease:Long, val genres:List<Genre>, val name: String, val platforms: List<Platform>, val summary:String, val totalRating:Float)
 data class Genre(val id:Long, val name: String)
 data class PlatformLogo(val id:Long, val url:String)
-data class Platform(val id:Long,val name:String,val platLogo:Long)
+data class Platform(val id:Long,val name:String, @SerializedName("platform_logo") val platLogo:Long)
