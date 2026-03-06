@@ -63,7 +63,16 @@ fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>){
                 containerColor = Color.Cyan,
                 titleContentColor = Color.Black,
             ),
-            title = { Text("My Games List") })
+            title = { Text("My Games List") },
+            navigationIcon ={
+                IconButton(onClick = {}){
+                    Icon(
+                        painter = painterResource(R.drawable.search_icon),
+                        contentDescription = ""
+                    )
+                }
+            }
+        )
     },
         contentWindowInsets = WindowInsets.systemBars,
         modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -113,12 +122,6 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
                 IconButton(onClick = { backStack.removeLastOrNull() }) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_arrow_back_24),
-                        contentDescription = ""
-                    )
-                }
-                IconButton(onClick = {}){
-                    Icon(
-                        painter = painterResource(R.drawable.search_icon),
                         contentDescription = ""
                     )
                 }
