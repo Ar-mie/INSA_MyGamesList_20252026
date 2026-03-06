@@ -75,8 +75,7 @@ fun AfficheDonneesJeu(game: GameComplet?, backStack: MutableList<Any>){
                 Text("Genres :")
                 Row(){
                     if (game != null) {
-                        Text(game.genres
-                            .joinToString(", "), overflow = TextOverflow.Ellipsis, maxLines = 1)
+                        Text(game.genres.joinToString(", ") { it.name }, overflow = TextOverflow.Ellipsis, maxLines = 1)
                     }
 
                 }
