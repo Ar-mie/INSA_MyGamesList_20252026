@@ -61,7 +61,9 @@ object IGDB {
 
         platform = platformFromJson
         platformMap = platform.associateBy ({ it.id },{it})
+
         gamesMapComplet = mutableMapOf<Long,GameComplet>()
+
         for(game in games){
 
             val g=ArrayList<Genre>()
@@ -86,7 +88,6 @@ object IGDB {
                     totalRating = game.totalRating
                 )
             }
-
             gameCplt?.let { gamesMapComplet.put(game.id, it) }
         }
 

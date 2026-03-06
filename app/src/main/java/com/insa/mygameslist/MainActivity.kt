@@ -110,9 +110,15 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
                 IGDB.gamesMapComplet[id]?.let { it1 -> Text(it1.name) }
             },
             navigationIcon = {
-                IconButton(onClick = {backStack.removeLastOrNull()}){
+                IconButton(onClick = { backStack.removeLastOrNull() }) {
                     Icon(
                         painter = painterResource(R.drawable.baseline_arrow_back_24),
+                        contentDescription = ""
+                    )
+                }
+                IconButton(onClick = {}){
+                    Icon(
+                        painter = painterResource(R.drawable.search_icon),
                         contentDescription = ""
                     )
                 }
@@ -173,7 +179,7 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
                 }
 
 
-                Text("Description : ${currentgame?.summary}", modifier = Modifier.paddingFromBaseline(top = 40.dp))
+                Text("Description : ${currentgame?.summary}", modifier = Modifier.paddingFromBaseline(top = 40.dp).padding(15.dp))
 
 
             }
