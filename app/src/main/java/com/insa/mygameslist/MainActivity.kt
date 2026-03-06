@@ -3,8 +3,6 @@ package com.insa.mygameslist
 import Etats_Navigation.Game_Info
 import Etats_Navigation.Home
 import android.os.Bundle
-import android.view.View
-import android.widget.Toolbar
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,8 +16,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,8 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import coil3.compose.AsyncImage
-import coil3.request.colorSpace
-import com.insa.mygameslist.data.Game
+import com.insa.mygameslist.data.GameComplet
 import com.insa.mygameslist.data.IGDB
 import com.insa.mygameslist.ui.theme.MyGamesListTheme
 
@@ -60,7 +55,7 @@ fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>){
         modifier = Modifier.fillMaxSize()) { innerPadding ->
             LazyColumn(modifier = Modifier.padding(innerPadding)) {
                 items(igdb.games) { game ->
-                    AfficheDonneesJeu(game,backStack)
+                    AfficheDonneesJeu(igdb.gamesMapComplet[game.id],backStack)
 
                 }
             }
@@ -69,19 +64,20 @@ fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>){
 }
 
 @Composable
-fun AfficheDonneesJeu(game: Game,backStack: MutableList<Any>){
-    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.clickable(onClick = {backStack.add(Game_Info(game.id))})) {
-        val coverId: Long = game.cover
+fun AfficheDonneesJeu(game: GameComplet?, backStack: MutableList<Any>){
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.clickable(onClick = { game?.let { backStack.add(Game_Info(it.id)) } })) {
         AsyncImage(
-            model = "https:${IGDB.coversMap.get(coverId)}",
+            model = "https:${game?.cover?.url}",
             contentDescription = null
         )
         Column(){
-                Text(game.name)
+                game?.name?.let { Text(it) }
                 Text("Genres :")
                 Row(){
-                    Text(game.genres.filter { IGDB.genresMap.containsKey(it) }
-                        .joinToString(", ") { IGDB.genresMap.get(it)!! }, overflow = TextOverflow.Ellipsis, maxLines = 1)
+                    if (game != null) {
+                        Text(game.genres
+                            .joinToString(", "), overflow = TextOverflow.Ellipsis, maxLines = 1)
+                    }
 
                 }
         }
@@ -98,7 +94,7 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
                 titleContentColor = Color.Black,
             ),
             title = {
-                IGDB.gamesMap.get(id)?.let { it1 -> Text(it1.name) }
+                IGDB.gamesMapComplet[id]?.let { it1 -> Text(it1.name) }
             },
             navigationIcon = {
                 IconButton(onClick = {backStack.removeLastOrNull()}){
@@ -113,14 +109,11 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
         contentWindowInsets = WindowInsets.systemBars,
         modifier = Modifier.fillMaxSize()) { innerPadding ->
             Column(modifier = Modifier.padding(innerPadding)){
-                IGDB.gamesMap.get(id)?.let { it1 -> Text(it1.name) }
-                val currentgame: Game? = IGDB.gamesMap.get(id)
-                //TODO
-                //FAIRE UNE SEULE MAP AVEC UN GAME QUI A TOUTES LES INFOS
-                //cf game Complet
+                IGDB.gamesMapComplet[id]?.let { it1 -> Text(it1.name) }
+                val currentgame: GameComplet? = IGDB.gamesMapComplet[id]
 
                 AsyncImage(
-                    model = "https:${IGDB.coversMap.get(currentgame?.cover )}",
+                    model = "https:${currentgame?.cover?.url}",
                     contentDescription = null
                 )
 
@@ -143,6 +136,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         IGDB.load(this)
+
 
         enableEdgeToEdge()
         setContent {
