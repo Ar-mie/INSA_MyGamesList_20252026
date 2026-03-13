@@ -193,6 +193,31 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
     }
 }
 
+@Composable
+fun RechercherJeu(igdb: IGDB, recherche : String): ArrayList<Long> {
+    val jeux = ArrayList<Long>()
+    for(game in igdb.gamesMapComplet.values){
+        var g = false
+        if(game.name.contains(recherche, true)){
+            jeux.add(game.id)
+            g = true
+        }
+        for(genre in game.genres){
+            if(genre.name.contains(recherche, true) && !g){
+                jeux.add(game.id)
+                g = true
+            }
+        }
+        for(plateforme in game.platforms){
+            if(plateforme.name.contains(recherche, true) && !g){
+                jeux.add(game.id)
+                g = true
+            }
+        }
+    }
+    return jeux
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
