@@ -25,14 +25,17 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
@@ -45,6 +48,7 @@ import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -61,37 +65,6 @@ import com.insa.mygameslist.ui.theme.MyGamesListTheme
 
 
 //@Preview(showBackground = true)
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>){
-    Scaffold(topBar = {
-        TopAppBar(
-            colors = topAppBarColors(
-                containerColor = Color.Cyan,
-                titleContentColor = Color.Black,
-            ),
-            title = { Text("My Games List") },
-            navigationIcon ={
-                IconButton(onClick = {}){
-                    Icon(
-                        painter = painterResource(R.drawable.search_icon),
-                        contentDescription = ""
-                    )
-                }
-            }
-        )
-    },
-        contentWindowInsets = WindowInsets.systemBars,
-        modifier = Modifier.fillMaxSize()) { innerPadding ->
-            LazyColumn(modifier = Modifier.padding(innerPadding)) {
-                items(igdb.games) { game ->
-                    AfficheDonneesJeu(igdb.gamesMapComplet[game.id],backStack)
-
-                }
-            }
-    }
-
-}
 
 @Composable
 fun AfficheDonneesJeu(game: GameComplet?, backStack: MutableList<Any>){
@@ -187,21 +160,11 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
 
                     }
                 }
-
-
                 Text("Description : ${currentgame?.summary}", modifier = Modifier.paddingFromBaseline(top = 40.dp).padding(15.dp))
-
-
             }
-//        Text(
-//            "ID du jeu : ${id}",
-//            modifier = Modifier.padding(innerPadding)
-//        )
     }
 }
-
-
-fun rechercherJeu(igdb: IGDB, recherche : String?, affichage : MutableState<ArrayList<Long>>){
+fun rechercherJeu(igdb: IGDB, recherche : String?,affichage : MutableState<ArrayList<Long>>) {
     val jeux = ArrayList<Long>()
     if(recherche != null) {
         for (game in igdb.gamesMapComplet.values) {
@@ -233,16 +196,31 @@ fun rechercherJeu(igdb: IGDB, recherche : String?, affichage : MutableState<Arra
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AfficherListeJeuxRecherche(igdb: IGDB, backStack: MutableList<Any>, jeux : ArrayList<Long>){
+fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>, jeux_a_afficher : MutableState<ArrayList<Long>>){
+    var champTexte by rememberSaveable { mutableStateOf("")}
+    //val resultats = ArrayList<Long>()
+    var rechercheEnCours by rememberSaveable { mutableStateOf(false) }
     Scaffold(topBar = {
         TopAppBar(
             colors = topAppBarColors(
                 containerColor = Color.Cyan,
                 titleContentColor = Color.Black,
             ),
-            title = { Text("My Games List") },
+            title = { if(!rechercheEnCours){
+                Text("My Games List")
+            }else{
+                Recherche(
+                    query = champTexte,
+                    onQueryChange = { input -> champTexte = input
+                                    rechercherJeu(igdb, champTexte, jeux_a_afficher)
+                                     },
+                    onSearch = { input -> champTexte = input
+                                rechercherJeu(igdb,champTexte, jeux_a_afficher)
+                                },
+                    modifier = Modifier)
+            } },
             navigationIcon ={
-                IconButton(onClick = {}){
+                IconButton(onClick = { rechercheEnCours=true }){
                     Icon(
                         painter = painterResource(R.drawable.search_icon),
                         contentDescription = ""
@@ -254,8 +232,8 @@ fun AfficherListeJeuxRecherche(igdb: IGDB, backStack: MutableList<Any>, jeux : A
         contentWindowInsets = WindowInsets.systemBars,
         modifier = Modifier.fillMaxSize()) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            if(jeux.isNotEmpty()) {
-                items(jeux) { idGame ->
+            if(jeux_a_afficher.value.isNotEmpty()) {
+                items(jeux_a_afficher.value) { idGame ->
                     AfficheDonneesJeu(igdb.gamesMapComplet[idGame], backStack)
 
                 }
@@ -264,9 +242,6 @@ fun AfficherListeJeuxRecherche(igdb: IGDB, backStack: MutableList<Any>, jeux : A
     }
 
 }
-
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -291,7 +266,7 @@ class MainActivity : ComponentActivity() {
                     entryProvider = { key ->
                         when(key){
                             is Home -> NavEntry(key){
-                                AfficherListeJeuxRecherche( IGDB,backStack, jeux_a_afficher)
+                                AfficherListeJeux( IGDB,backStack, jeux_a_afficher)
                             }
                             is Game_Info -> NavEntry(key){
                                 AfficherDetailsJeu(IGDB,backStack,key.id)
