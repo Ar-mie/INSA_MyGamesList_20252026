@@ -33,8 +33,13 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
@@ -195,8 +200,8 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
     }
 }
 
-@Composable
-fun RechercherJeu(igdb: IGDB, recherche : String?, backStack: MutableList<Any>): ArrayList<Long> {
+
+fun rechercherJeu(igdb: IGDB, recherche : String?, affichage : MutableState<ArrayList<Long>>){
     val jeux = ArrayList<Long>()
     if(recherche != null) {
         for (game in igdb.gamesMapComplet.values) {
@@ -218,21 +223,12 @@ fun RechercherJeu(igdb: IGDB, recherche : String?, backStack: MutableList<Any>):
                 }
             }
         }
-        if(jeux.isEmpty()) {
-            backStack.removeLastOrNull()
-            backStack.add(Home_with_search(recherche, jeux))
-            return jeux
-        }
-        else{
-            backStack.removeLastOrNull()
-            backStack.add(No_match)
-            return jeux
-        }
     }else{
-        backStack.removeLastOrNull()
-        backStack.add(Home)
-        return jeux
+        for(game in igdb.gamesMapComplet.values){
+            jeux.add(game.id)
+        }
     }
+    affichage.value = jeux
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -269,6 +265,9 @@ fun AfficherListeJeuxRecherche(igdb: IGDB, backStack: MutableList<Any>, jeux : A
 
 }
 
+
+
+
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -280,7 +279,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val backStack = remember{ mutableStateListOf<Any>(Home) }
-
+            val listeTotale = ArrayList<Long>()
+            for(game in IGDB.gamesMapComplet.values){
+                listeTotale.add(game.id)
+            }
+            val jeux_a_afficher = rememberSaveable { mutableStateOf(listeTotale) }
             MyGamesListTheme {
                 NavDisplay(
                     backStack = backStack,
@@ -288,16 +291,10 @@ class MainActivity : ComponentActivity() {
                     entryProvider = { key ->
                         when(key){
                             is Home -> NavEntry(key){
-                                AfficherListeJeux( IGDB,backStack)
+                                AfficherListeJeuxRecherche( IGDB,backStack, jeux_a_afficher)
                             }
                             is Game_Info -> NavEntry(key){
                                 AfficherDetailsJeu(IGDB,backStack,key.id)
-                            }
-                            is Home_with_search -> NavEntry(key){
-                                AfficherListeJeuxRecherche(IGDB,backStack, key.jeux)
-                            }
-                            is No_match -> NavEntry(key){
-                                Text("No match :(")
                             }
                             else -> NavEntry(Unit) { Text("Unknown route") }
                         }
