@@ -2,6 +2,8 @@ package com.insa.mygameslist
 
 import Etats_Navigation.Game_Info
 import Etats_Navigation.Home
+import Etats_Navigation.Home_with_search
+import Etats_Navigation.No_match
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -194,28 +196,77 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
 }
 
 @Composable
-fun RechercherJeu(igdb: IGDB, recherche : String): ArrayList<Long> {
+fun RechercherJeu(igdb: IGDB, recherche : String?, backStack: MutableList<Any>): ArrayList<Long> {
     val jeux = ArrayList<Long>()
-    for(game in igdb.gamesMapComplet.values){
-        var g = false
-        if(game.name.contains(recherche, true)){
-            jeux.add(game.id)
-            g = true
-        }
-        for(genre in game.genres){
-            if(genre.name.contains(recherche, true) && !g){
+    if(recherche != null) {
+        for (game in igdb.gamesMapComplet.values) {
+            var g = false
+            if (game.name.contains(recherche, true)) {
                 jeux.add(game.id)
                 g = true
             }
+            for (genre in game.genres) {
+                if (genre.name.contains(recherche, true) && !g) {
+                    jeux.add(game.id)
+                    g = true
+                }
+            }
+            for (plateforme in game.platforms) {
+                if (plateforme.name.contains(recherche, true) && !g) {
+                    jeux.add(game.id)
+                    g = true
+                }
+            }
         }
-        for(plateforme in game.platforms){
-            if(plateforme.name.contains(recherche, true) && !g){
-                jeux.add(game.id)
-                g = true
+        if(jeux.isEmpty()) {
+            backStack.removeLastOrNull()
+            backStack.add(Home_with_search(recherche, jeux))
+            return jeux
+        }
+        else{
+            backStack.removeLastOrNull()
+            backStack.add(No_match)
+            return jeux
+        }
+    }else{
+        backStack.removeLastOrNull()
+        backStack.add(Home)
+        return jeux
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AfficherListeJeuxRecherche(igdb: IGDB, backStack: MutableList<Any>, jeux : ArrayList<Long>){
+    Scaffold(topBar = {
+        TopAppBar(
+            colors = topAppBarColors(
+                containerColor = Color.Cyan,
+                titleContentColor = Color.Black,
+            ),
+            title = { Text("My Games List") },
+            navigationIcon ={
+                IconButton(onClick = {}){
+                    Icon(
+                        painter = painterResource(R.drawable.search_icon),
+                        contentDescription = ""
+                    )
+                }
+            }
+        )
+    },
+        contentWindowInsets = WindowInsets.systemBars,
+        modifier = Modifier.fillMaxSize()) { innerPadding ->
+        LazyColumn(modifier = Modifier.padding(innerPadding)) {
+            if(jeux.isNotEmpty()) {
+                items(jeux) { idGame ->
+                    AfficheDonneesJeu(igdb.gamesMapComplet[idGame], backStack)
+
+                }
             }
         }
     }
-    return jeux
+
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -241,6 +292,12 @@ class MainActivity : ComponentActivity() {
                             }
                             is Game_Info -> NavEntry(key){
                                 AfficherDetailsJeu(IGDB,backStack,key.id)
+                            }
+                            is Home_with_search -> NavEntry(key){
+                                AfficherListeJeuxRecherche(IGDB,backStack, key.jeux)
+                            }
+                            is No_match -> NavEntry(key){
+                                Text("No match :(")
                             }
                             else -> NavEntry(Unit) { Text("Unknown route") }
                         }
