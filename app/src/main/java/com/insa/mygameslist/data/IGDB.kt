@@ -85,7 +85,8 @@ object IGDB {
                     name = game.name,
                     platforms = p,
                     summary = game.summary,
-                    totalRating = game.totalRating
+                    totalRating = game.totalRating,
+                    favori = false
                 )
             }
             gameCplt?.let { gamesMapComplet.put(game.id, it) }
@@ -99,7 +100,7 @@ data class Cover(val id: Long, val url: String)
 data class Game(val id:Long, val cover:Long, @SerializedName("first_release_date") val firstRelease:Long, val genres:List<Long>, val name: String, val platforms: List<Long>, val summary:String, @SerializedName("total_rating") val totalRating:Float){
 }
 
-data class GameComplet(val id:Long, val cover:Cover, val firstRelease:Long, val genres:List<Genre>, val name: String, val platforms: List<Platform>, val summary:String, val totalRating:Float)
+data class GameComplet(val id:Long, val cover:Cover, val firstRelease:Long, val genres:List<Genre>, val name: String, val platforms: List<Platform>, val summary:String, val totalRating:Float, var favori: Boolean)
 data class Genre(val id:Long, val name: String)
 data class PlatformLogo(val id:Long, val url:String)
 data class Platform(val id:Long,val name:String, @SerializedName("platform_logo") val platLogo:Long)

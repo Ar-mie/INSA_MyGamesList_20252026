@@ -2,8 +2,6 @@ package com.insa.mygameslist
 
 import Etats_Navigation.Game_Info
 import Etats_Navigation.Home
-import Etats_Navigation.Home_with_search
-import Etats_Navigation.No_match
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -13,42 +11,34 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fitInside
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.paddingFromBaseline
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.MutableState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.BiasAlignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -67,7 +57,7 @@ import com.insa.mygameslist.ui.theme.MyGamesListTheme
 //@Preview(showBackground = true)
 
 @Composable
-fun AfficheDonneesJeu(game: GameComplet?, backStack: MutableList<Any>){
+fun AfficheDonneesJeu(game: GameComplet?, backStack: MutableList<Any>, favori_states: MutableMap<Long, MutableState<Boolean>>){
     Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.clickable(onClick = { game?.let { backStack.add(Game_Info(it.id)) } })) {
         AsyncImage(
             model = "https:${game?.cover?.url}",
@@ -82,13 +72,30 @@ fun AfficheDonneesJeu(game: GameComplet?, backStack: MutableList<Any>){
                     }
 
                 }
+                IconButton(onClick = { miseEnFavori(game,favori_states) }) {
+                    if(game != null){
+                        if(favori_states[game.id]?.value==true){
+                            Icon(
+                                painter = painterResource(R.drawable.etoile_pleine),
+                                contentDescription = ""
+                            )
+                        }
+                        else{
+                            Icon(
+                                painter = painterResource(R.drawable.etoile_vide),
+                                contentDescription = ""
+                            )
+                        }
+                    }
+
+                }
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
+fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id: Long, favori_states: MutableMap<Long, MutableState<Boolean>>){
     Scaffold(topBar = {
         TopAppBar(
             colors = topAppBarColors(
@@ -104,6 +111,24 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id:Long){
                         painter = painterResource(R.drawable.baseline_arrow_back_24),
                         contentDescription = ""
                     )
+                }
+            },
+            actions = {
+                if(favori_states[id]?.value == true){
+                    IconButton(onClick = { miseEnFavori(IGDB.gamesMapComplet[id],favori_states) }) {
+                        Icon(
+                            painter = painterResource(R.drawable.etoile_pleine),
+                            contentDescription = ""
+                        )
+                    }
+                }else{
+                    IconButton(onClick = { miseEnFavori(IGDB.gamesMapComplet[id],favori_states) }) {
+                        Icon(
+                            painter = painterResource(R.drawable.etoile_vide),
+                            contentDescription = ""
+                        )
+                    }
+
                 }
             }
         )
@@ -196,7 +221,7 @@ fun rechercherJeu(igdb: IGDB, recherche : String?,affichage : MutableState<Array
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>, jeux_a_afficher : MutableState<ArrayList<Long>>){
+fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>, jeux_a_afficher: MutableState<ArrayList<Long>>, favori_states: MutableMap<Long, MutableState<Boolean>>){
     var champTexte by rememberSaveable { mutableStateOf("")}
     //val resultats = ArrayList<Long>()
     var rechercheEnCours by rememberSaveable { mutableStateOf(false) }
@@ -219,7 +244,7 @@ fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>, jeux_a_afficher :
                                 },
                     modifier = Modifier)
             } },
-            navigationIcon ={
+            actions ={
                 IconButton(onClick = { rechercheEnCours=true }){
                     Icon(
                         painter = painterResource(R.drawable.search_icon),
@@ -234,13 +259,20 @@ fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>, jeux_a_afficher :
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
             if(jeux_a_afficher.value.isNotEmpty()) {
                 items(jeux_a_afficher.value) { idGame ->
-                    AfficheDonneesJeu(igdb.gamesMapComplet[idGame], backStack)
+                    AfficheDonneesJeu(igdb.gamesMapComplet[idGame], backStack, favori_states)
 
                 }
             }
         }
     }
 
+}
+
+fun miseEnFavori(game: GameComplet?, favori_states: MutableMap<Long, MutableState<Boolean>>){
+    if(game != null){
+        game.favori = !game.favori
+        favori_states[game.id]?.value = game.favori
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -255,10 +287,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             val backStack = remember{ mutableStateListOf<Any>(Home) }
             val listeTotale = ArrayList<Long>()
+            val favori_states_map = mutableMapOf<Long, MutableState<Boolean>>()
             for(game in IGDB.gamesMapComplet.values){
                 listeTotale.add(game.id)
             }
+            for(game in IGDB.gamesMapComplet.values){
+                 val fav_state = rememberSaveable { mutableStateOf(game.favori) }
+                favori_states_map[game.id] = fav_state
+            }
             val jeux_a_afficher = rememberSaveable { mutableStateOf(listeTotale) }
+
             MyGamesListTheme {
                 NavDisplay(
                     backStack = backStack,
@@ -266,10 +304,10 @@ class MainActivity : ComponentActivity() {
                     entryProvider = { key ->
                         when(key){
                             is Home -> NavEntry(key){
-                                AfficherListeJeux( IGDB,backStack, jeux_a_afficher)
+                                AfficherListeJeux( IGDB, backStack, jeux_a_afficher, favori_states_map)
                             }
                             is Game_Info -> NavEntry(key){
-                                AfficherDetailsJeu(IGDB,backStack,key.id)
+                                AfficherDetailsJeu(IGDB,backStack,key.id,favori_states_map)
                             }
                             else -> NavEntry(Unit) { Text("Unknown route") }
                         }
