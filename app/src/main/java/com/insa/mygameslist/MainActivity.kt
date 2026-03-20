@@ -38,6 +38,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
@@ -52,6 +53,7 @@ import coil3.compose.AsyncImage
 import com.insa.mygameslist.data.GameComplet
 import com.insa.mygameslist.data.IGDB
 import com.insa.mygameslist.ui.theme.MyGamesListTheme
+import kotlinx.coroutines.selects.select
 
 
 //@Preview(showBackground = true)
@@ -77,13 +79,15 @@ fun AfficheDonneesJeu(game: GameComplet?, backStack: MutableList<Any>, favori_st
                         if(favori_states[game.id]?.value==true){
                             Icon(
                                 painter = painterResource(R.drawable.etoile_pleine),
-                                contentDescription = ""
+                                contentDescription = "",
+                                modifier = Modifier.width(20.dp)
                             )
                         }
                         else{
                             Icon(
                                 painter = painterResource(R.drawable.etoile_vide),
-                                contentDescription = ""
+                                contentDescription = "",
+                                modifier = Modifier.width(20.dp)
                             )
                         }
                     }
@@ -91,6 +95,29 @@ fun AfficheDonneesJeu(game: GameComplet?, backStack: MutableList<Any>, favori_st
                 }
         }
     }
+}
+
+fun miseEnFavori(game: GameComplet?) {
+    if(game != null){
+        if(game.favori){
+            game.favori = false
+        }else{
+            game.favori = true
+        }
+    }
+}
+
+@Composable
+fun changerIconeFavori(game: GameComplet?) : Painter{
+    var p = painterResource(R.drawable.baseline_arrow_back_24)
+    if(game != null){
+        if(game.favori){
+            p = painterResource(R.drawable.baseline_arrow_back_24)
+        }else{
+            p = painterResource(R.drawable.baseline_no_photography_24)
+        }
+    }
+    return p
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -118,14 +145,16 @@ fun AfficherDetailsJeu(igdb: IGDB, backStack: MutableList<Any>, id: Long, favori
                     IconButton(onClick = { miseEnFavori(IGDB.gamesMapComplet[id],favori_states) }) {
                         Icon(
                             painter = painterResource(R.drawable.etoile_pleine),
-                            contentDescription = ""
+                            contentDescription = "",
+                            modifier = Modifier.width(20.dp)
                         )
                     }
                 }else{
                     IconButton(onClick = { miseEnFavori(IGDB.gamesMapComplet[id],favori_states) }) {
                         Icon(
                             painter = painterResource(R.drawable.etoile_vide),
-                            contentDescription = ""
+                            contentDescription = "",
+                            modifier = Modifier.width(20.dp)
                         )
                     }
 
@@ -219,12 +248,31 @@ fun rechercherJeu(igdb: IGDB, recherche : String?,affichage : MutableState<Array
     affichage.value = jeux
 }
 
+fun selectionnerFavoris(igdb: IGDB, affichage : MutableState<ArrayList<Long>>, etat : MutableState<Boolean>){
+    val jeux = ArrayList<Long>()
+    if(!etat.value){
+        for(game in igdb.gamesMapComplet.values){
+            if(game.favori){
+                jeux.add(game.id)
+            }
+        }
+        etat.value = true
+    }else{
+        for(game in igdb.gamesMapComplet.values){
+            jeux.add(game.id)
+        }
+        etat.value = false
+    }
+    affichage.value = jeux
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>, jeux_a_afficher: MutableState<ArrayList<Long>>, favori_states: MutableMap<Long, MutableState<Boolean>>){
     var champTexte by rememberSaveable { mutableStateOf("")}
     //val resultats = ArrayList<Long>()
-    var rechercheEnCours by rememberSaveable { mutableStateOf(false) }
+    var rechercheEnCours: Boolean by rememberSaveable { mutableStateOf(false) }
+    var afficherFavoris: MutableState<Boolean> = rememberSaveable { mutableStateOf(false) }
     Scaffold(topBar = {
         TopAppBar(
             colors = topAppBarColors(
@@ -245,6 +293,13 @@ fun AfficherListeJeux(igdb: IGDB, backStack: MutableList<Any>, jeux_a_afficher: 
                     modifier = Modifier)
             } },
             actions ={
+                IconButton(onClick = { selectionnerFavoris(IGDB, jeux_a_afficher, afficherFavoris)} ){
+                    Icon(
+                        painter = painterResource(R.drawable.etoile_pleine),
+                        contentDescription = "",
+                        modifier = Modifier.width(20.dp)
+                    )
+                }
                 IconButton(onClick = { rechercheEnCours=true }){
                     Icon(
                         painter = painterResource(R.drawable.search_icon),
