@@ -7,6 +7,7 @@ import androidx.compose.ui.res.painterResource
 import com.insa.mygameslist.data.GameComplet
 import com.insa.mygameslist.data.IGDB
 
+//
 fun miseEnFavori(game: GameComplet?, favoriStates: MutableMap<Long, MutableState<Boolean>>){
     if(game != null){
         game.favori = !game.favori

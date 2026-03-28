@@ -56,6 +56,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontLoadingStrategy
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -73,6 +74,8 @@ import kotlinx.coroutines.selects.select
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+//fonction permettant d'afficher la liste principale contenant tous les jeux à afficher.
+//elle prend en paramètre l'objet IGDB, la backstack contenant les états de navigation, la liste des jeux à afficher, et une map contenant chaque jeu et s'il est en favori ou non.
 fun AfficherListeDesJeux(igdb: IGDB, backStack: MutableList<Any>, jeuxAafficher: MutableState<ArrayList<Long>>, favori_states: MutableMap<Long, MutableState<Boolean>>){
     var champTexte by rememberSaveable { mutableStateOf("")}
     //val resultats = ArrayList<Long>()
@@ -105,7 +108,7 @@ fun AfficherListeDesJeux(igdb: IGDB, backStack: MutableList<Any>, jeuxAafficher:
                         modifier = Modifier.width(20.dp)
                     )
                 }
-                IconButton(onClick = { rechercheEnCours=true }){
+                IconButton(onClick = { rechercheEnCours=!rechercheEnCours }){
                     Icon(
                         painter = painterResource(R.drawable.search_icon),
                         modifier = Modifier.offset(y = 4.dp),
@@ -125,11 +128,16 @@ fun AfficherListeDesJeux(igdb: IGDB, backStack: MutableList<Any>, jeuxAafficher:
                 }
             }
         }
+        if(!jeuxAafficher.value.isNotEmpty()){
+            Text("No match :(", modifier = Modifier.padding(innerPadding), fontStyle = FontStyle.Italic, textAlign = TextAlign.Center)
+        }
     }
 
 }
 
 @Composable
+//fonction permettant d'afficher la preview des détails d'un jeu, visible dans la liste principale contenant tous les jeux affichés.
+//elle prend en paramètre un objet GameComplet (le jeu dont on affiche la preview des détails), la backstack des états de navigation, et la map contenant chaque jeu et s'il est en favori
 fun AfficherPreviewDetails(game: GameComplet?, backStack: MutableList<Any>, favoriStates: MutableMap<Long, MutableState<Boolean>>){
     Row(horizontalArrangement = Arrangement.spacedBy(5.dp), modifier = Modifier.clickable(onClick = { game?.let { backStack.add(Game_Info(it.id)) } }).absolutePadding(top = 15.dp, right = 10.dp) ){
         Box(
@@ -190,6 +198,8 @@ fun AfficherPreviewDetails(game: GameComplet?, backStack: MutableList<Any>, favo
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+//fonction qui affiche la page de détails d'un jeu, accessible lorsqu'on clique dessus dans la liste principale de tous les jeux affichés
+//elle prend en paramètre l'objet IGDB, la backstack des états de navigation, la map contenant les jeux et leur état de favori
 fun AfficherPagedeDetails(igdb: IGDB, backStack: MutableList<Any>, id: Long, favoriStates: MutableMap<Long, MutableState<Boolean>>) { //, viewModelJeu : ViewModelJeu = viewModel() { }
     Scaffold(
         topBar = {
@@ -313,6 +323,7 @@ fun AfficherPagedeDetails(igdb: IGDB, backStack: MutableList<Any>, id: Long, fav
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
+//fonction main activity compilant le tout
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
