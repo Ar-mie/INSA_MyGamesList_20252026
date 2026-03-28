@@ -15,6 +15,7 @@ import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.SearchBarDefaults.InputField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -24,6 +25,37 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import com.insa.mygameslist.data.IGDB
+
+fun rechercherJeu(igdb: IGDB, recherche : String?, affichage : MutableState<ArrayList<Long>>) {
+    val jeux = ArrayList<Long>()
+    if(recherche != null) {
+        for (game in igdb.gamesMapComplet.values) {
+            var g = false
+            if (game.name.contains(recherche, true)) {
+                jeux.add(game.id)
+                g = true
+            }
+            for (genre in game.genres) {
+                if (genre.name.contains(recherche, true) && !g) {
+                    jeux.add(game.id)
+                    g = true
+                }
+            }
+            for (plateforme in game.platforms) {
+                if (plateforme.name.contains(recherche, true) && !g) {
+                    jeux.add(game.id)
+                    g = true
+                }
+            }
+        }
+    }else{
+        for(game in igdb.gamesMapComplet.values){
+            jeux.add(game.id)
+        }
+    }
+    affichage.value = jeux
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
