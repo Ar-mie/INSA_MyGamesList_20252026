@@ -70,7 +70,6 @@ import com.insa.mygameslist.ui.theme.PurpleGrey80
 @Composable
 fun AfficherListeDesJeux(igdb: IGDB, backStack: MutableList<Any>, jeuxAafficher: MutableState<ArrayList<Long>>, favoriStates: MutableMap<Long, MutableState<Boolean>>){
     var champTexte by rememberSaveable { mutableStateOf("")}
-    //val resultats = ArrayList<Long>()
     var rechercheEnCours: Boolean by rememberSaveable { mutableStateOf(false) }
     var afficherFavoris: MutableState<Boolean> = rememberSaveable { mutableStateOf(false) }
     Scaffold(topBar = {
